@@ -1,12 +1,16 @@
 package main
 
 import (
-	"fmt"
-
-	ffneuralnet "github.com/JoshuaTrevor/Neat-Go/FFNeuralNet"
+	//ffneuralnet "github.com/JoshuaTrevor/Neat-Go/FFNeuralNet"
+	testexample "github.com/JoshuaTrevor/Neat-Go/TestExample"
 )
 
 func main() {
-	ffneuralnet.InitNeuralNet([]int{1, 2, 3})
-	fmt.Println("done")
+	//neuralNet := ffneuralnet.InitNeuralNet([]int{1, 2, 3})
+	//neuralNet.MutateConnections()
+	example()
+}
+
+func example () {
+	testexample.TrainConcurrent()
 }
