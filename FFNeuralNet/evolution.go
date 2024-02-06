@@ -1,9 +1,11 @@
 package ffneuralnet
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sort"
+	"time"
 
 	config "github.com/JoshuaTrevor/Neat-Go/Config"
 )
@@ -18,16 +20,25 @@ type FitnessFunc func(*FFNeuralNet) float64
 
 func Train(evaluate FitnessFunc, fromScratch bool) {
 	var generation []*FFNeuralNet
+	var trainingTimeSeconds int = 0
+	start := time.Now().Unix()
 	if fromScratch {
 		generation = InitGeneration() // Completely random starter generation
 	} else {
-		generation = Load().SpawnGeneration() // Spawn generation based off single 'Adam' species
+		storedNeuralNet, err := Load()
+		if err != nil {
+			panic(err)
+		}
+		trainingTimeSeconds = storedNeuralNet.TrainingDurationSeconds
+		generation = storedNeuralNet.NeuralNet.SpawnGeneration()	
 	}
 	conf := config.GetConfig()
 	topSpeciesNumFloat := conf.PreservationRate * float32(conf.GenerationPopulation)
 	topSpeciesNum := int(math.Ceil(float64(topSpeciesNumFloat)))
+	
 
-	for i := 0; i < 100; i++ { // how many generations to loop for
+	var bestBrain *FFNeuralNet
+	for i := 0; i < 100000; i++ { // how many generations to loop for
 		evaluationQueue := make(chan *FFNeuralNet, conf.GenerationPopulation)
 		evaluatedSpecies := make(chan ScoredNeuralNet, conf.GenerationPopulation)
 		for _, species := range generation {
@@ -47,19 +58,18 @@ func Train(evaluate FitnessFunc, fromScratch bool) {
 		sort.Slice(scoredNetworks, func(i, j int) bool {
 			return scoredNetworks[i].Score > scoredNetworks[j].Score //descending
 		})
+		fmt.Println("Best score of generation:", scoredNetworks[0].Score)
 
 		topSpecies := []*FFNeuralNet{}
 		for i := 0; i < topSpeciesNum; i++ {
-			if i == 0 {
-			}
 			topSpecies = append(topSpecies, scoredNetworks[i].NeuralNet)
 		}
-	
+		bestBrain = topSpecies[0]
 		generation = PadGeneration(topSpecies)
 	}
+	bestBrain.Save(trainingTimeSeconds + int(time.Now().Unix()) - int(start))
 }
 
-// Accept input channel and output channel as args
 // In future consider whether this should be a constantly running service instead, would need to keep same channels since the start I guess.
 func EvaluateSpeciesConcurrent(evaluationQueue chan *FFNeuralNet, evaluatedSpecies chan ScoredNeuralNet, evaluate FitnessFunc) {
 	for neuralNet := range evaluationQueue {

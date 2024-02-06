@@ -9,8 +9,8 @@ import (
 )
 
 type StoredFFNeuralNet struct {
-	FFNeuralNet       FFNeuralNet
-	SecondsTrainedFor int
+	NeuralNet             FFNeuralNet `json:"Neural Net"`
+	TrainingDurationSeconds int         `json:"Training Duration Seconds"`
 }
 
 type FFNeuralNet []Layer
@@ -18,12 +18,12 @@ type FFNeuralNet []Layer
 type Layer []Node
 
 type Node struct {
-	InputSum    float64
-	Connections []Connection
+	InputSum    float64      `json:"Input Sum"`
+	Connections []Connection `json:"Connections"`
 }
 type Connection struct {
-	Target int
-	Weight float64
+	Target int     `json:"Target"`
+	Weight float64 `json:"Weight"`
 }
 
 // Run many times for the first generation only, subsequent neural nets will always be produced by mutation
@@ -129,7 +129,7 @@ func InitGeneration() []*FFNeuralNet {
 func (neuralNet *FFNeuralNet) ResetInputs() {
 	for layerIdx := 0; layerIdx < len(*neuralNet); layerIdx++ {
 		for nodeIdx := 0; nodeIdx < len((*neuralNet)[layerIdx]); nodeIdx++ {
-				(*neuralNet)[layerIdx][nodeIdx].InputSum = 0
+			(*neuralNet)[layerIdx][nodeIdx].InputSum = 0
 		}
 	}
 

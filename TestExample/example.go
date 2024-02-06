@@ -6,7 +6,7 @@ import (
 
 
 func Train() {
-	fromScratch := true
+	fromScratch := false
 	ffneuralnet.Train(evaluate, fromScratch)
 }
 

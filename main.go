@@ -12,5 +12,5 @@ func main() {
 }
 
 func example () {
-	testexample.TrainConcurrent()
+	testexample.Train()
 }
