@@ -19,6 +19,6 @@ func GetConfig() Config {
 		MutateAmount: 0.2,
 		PreservationRate: 0.12,
 		GenerationPopulation: 10,
-		Dimensions: []int{4, 3, 4},
+		Dimensions: []int{10, 100, 4},
 	}
 }
