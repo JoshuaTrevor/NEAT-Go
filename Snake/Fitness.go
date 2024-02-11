@@ -1,11 +1,12 @@
 package snake
 
 import (
+	"math"
+
 	ffneuralnet "github.com/JoshuaTrevor/Neat-Go/FFNeuralNet"
-	snake "github.com/JoshuaTrevor/Neat-Go/Snake"
 )
 
-func evaluate(neuralNet *ffneuralnet.FFNeuralNet) float64 {
+func Evaluate(neuralNet *ffneuralnet.FFNeuralNet) float64 {
 	fitnessSum := float64(0)
 	fitnessCount := float64(0)
 
@@ -16,11 +17,20 @@ func evaluate(neuralNet *ffneuralnet.FFNeuralNet) float64 {
 	return fitnessSum / fitnessCount
 }
 
+func getManhattanDistanceToApple(snakeGame *SnakeGame) float64 {
+	return math.Abs(float64(snakeGame.Food.x-snakeGame.Snake.head.x)) + math.Abs(float64(snakeGame.Food.y-snakeGame.Snake.head.y))
+}
+
 func evaluateSingleRun(neuralNet *ffneuralnet.FFNeuralNet) float64 {
 	snakeGame := NewGame()
 	moves := 0
+	constructiveMoves := 0
+	destructiveMoves := 0
+	movesSinceApple := 0
+	snakeLength := len(snakeGame.Snake.body)
+	abort := false
 
-	for !snakeGame.Snake.ShouldDie() {
+	for !snakeGame.Snake.ShouldDie() || abort {
 		vision := snakeGame.getVision()
 		nn_output := neuralNet.Feed(vision)
 
@@ -28,20 +38,38 @@ func evaluateSingleRun(neuralNet *ffneuralnet.FFNeuralNet) float64 {
 		maxVal := float64(-1000)
 		maxValIndex := -1
 		for idx, val := range nn_output {
-			if val > maxVal{
+			if val > maxVal {
 				maxVal = val
 				maxValIndex = idx
 			}
 		}
 
-		//Get prev manhattan first
+		prevManhattan := getManhattanDistanceToApple(snakeGame)
 		snakeGame.Move(maxValIndex)
-		// Now get manhattan against and confirm destructive vs contstructive
 
-		// Basically have everything we need to return fitness function here
-		// TODO tomorrow: manhattan distance, fitness function, checkpoint saving
-		// Then hopefully if all that works, can get it running in a browser using previous react app (after converting react app to accept json)
+		// Check if it ate an apple
+		if len(snakeGame.Snake.body) > snakeLength {
+			movesSinceApple = 0
+		}
+
+		// Reward the snake for moving closer to the apple
+		newManhattan := getManhattanDistanceToApple(snakeGame)
+		if newManhattan > prevManhattan {
+			destructiveMoves++
+		} else {
+			constructiveMoves++
+		}
+
+		// Reward the snake for not dying straight away, kill the snake if it's making no progress
+		if moves < 20 {
+			moves++
+		} else if float64(movesSinceApple) > 10*10*math.Min(0.4+float64(len(snakeGame.Snake.body))*0.1, 1) {
+			abort = true
+		}
 	}
+
+	fitness := (len(snakeGame.Snake.body)-1)*250 + constructiveMoves - destructiveMoves
+	return float64(fitness)
 }
 
 // I think the game itself is essentially ready to go...

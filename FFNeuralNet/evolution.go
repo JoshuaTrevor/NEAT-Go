@@ -58,7 +58,9 @@ func Train(evaluate FitnessFunc, fromScratch bool) {
 		sort.Slice(scoredNetworks, func(i, j int) bool {
 			return scoredNetworks[i].Score > scoredNetworks[j].Score //descending
 		})
-		fmt.Println("Best score of generation:", scoredNetworks[0].Score)
+
+		//fmt.Println("Best score of generation", i, "was", scoredNetworks[0].Score)
+		fmt.Println("Generation", i, "had mean score of", mean(scoredNetworks))
 
 		topSpecies := []*FFNeuralNet{}
 		for i := 0; i < topSpeciesNum; i++ {
@@ -66,8 +68,20 @@ func Train(evaluate FitnessFunc, fromScratch bool) {
 		}
 		bestBrain = topSpecies[0]
 		generation = PadGeneration(topSpecies)
+
+		if i % 10 == 0 {
+			bestBrain.Save(trainingTimeSeconds + int(time.Now().Unix()) - int(start))
+		}
 	}
 	bestBrain.Save(trainingTimeSeconds + int(time.Now().Unix()) - int(start))
+}
+
+func mean(scoredNNs []ScoredNeuralNet) float64 {
+	sum := 0.0
+	for _, scoredNN := range scoredNNs {
+		sum += scoredNN.Score 
+	}
+	return sum / float64(len(scoredNNs))
 }
 
 // In future consider whether this should be a constantly running service instead, would need to keep same channels since the start I guess.

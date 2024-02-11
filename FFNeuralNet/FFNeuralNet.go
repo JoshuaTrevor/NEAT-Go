@@ -1,6 +1,7 @@
 package ffneuralnet
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -9,7 +10,7 @@ import (
 )
 
 type StoredFFNeuralNet struct {
-	NeuralNet             FFNeuralNet `json:"Neural Net"`
+	NeuralNet               FFNeuralNet `json:"Neural Net"`
 	TrainingDurationSeconds int         `json:"Training Duration Seconds"`
 }
 
@@ -71,9 +72,16 @@ func activation(input float64) float64 {
 	return (1 / (1 + math.Pow(math.E, (-1*input))))
 }
 
+// For every layer except the last layer, propagate inputs via weights
 func (neuralNet *FFNeuralNet) Feed(inputs []float64) []float64 {
-	// For every layer except the last layer, propagate inputs via weights
 	layerCount := len(*neuralNet)
+
+	// Send through inputs
+	for nodeIdx := 0; nodeIdx < len((*neuralNet)[0]); nodeIdx++ {
+		(*neuralNet)[0][nodeIdx].InputSum = inputs[nodeIdx]
+	}
+
+	// propagate inputs forward
 	for layerIdx := 0; layerIdx < layerCount-1; layerIdx++ {
 		for nodeIdx := 0; nodeIdx < len((*neuralNet)[layerIdx]); nodeIdx++ {
 			for connectionIdx := 0; connectionIdx < len((*neuralNet)[layerIdx][nodeIdx].Connections); connectionIdx++ {
@@ -87,7 +95,7 @@ func (neuralNet *FFNeuralNet) Feed(inputs []float64) []float64 {
 	// Now the outputs should be the input energy to the last layer.
 	result := []float64{}
 	for nodeIdx := 0; nodeIdx < len((*neuralNet)[layerCount-1]); nodeIdx++ {
-		result = append(result, (*neuralNet)[layerCount-1][nodeIdx].InputSum)
+		result = append(result, activation((*neuralNet)[layerCount-1][nodeIdx].InputSum))
 	}
 
 	// Reset input sums to zero. Should think of a better system than this. Best way would be to use a mapping of node to inputSum, but maybe this isn't too bad
@@ -127,7 +135,8 @@ func InitGeneration() []*FFNeuralNet {
 
 // Reset 'InputSum' to 0. Must be done before cloning to avoid copies preserving input sum!
 func (neuralNet *FFNeuralNet) ResetInputs() {
-	for layerIdx := 0; layerIdx < len(*neuralNet); layerIdx++ {
+	// Start at one since resetting input layer is not needed
+	for layerIdx := 1; layerIdx < len(*neuralNet); layerIdx++ {
 		for nodeIdx := 0; nodeIdx < len((*neuralNet)[layerIdx]); nodeIdx++ {
 			(*neuralNet)[layerIdx][nodeIdx].InputSum = 0
 		}

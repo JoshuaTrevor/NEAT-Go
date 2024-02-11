@@ -69,7 +69,7 @@ func (coords Coords) GetNeighbour(direction int) Coords {
 }
 
 func (gameState *SnakeGame) getVision() []float64 {
-	var output []float64
+	var output [10]float64
 	output[0] = math.Min(math.Abs(float64(gameState.Snake.head.x-gameState.Food.x)), 8.0) / 8.0
 	output[1] = math.Min(math.Abs(float64(gameState.Snake.head.y-gameState.Food.y)), 8.0) / 8.0
 
@@ -79,7 +79,7 @@ func (gameState *SnakeGame) getVision() []float64 {
 		normalisedDistance := math.Min(8.0, float64(distance)) / 8.0
 		output[2+idx] = normalisedDistance
 	}
-	return output
+	return output[:]
 }
 
 func (gameState SnakeGame) getDistanceInDirection(xModifier int, yModifier int) int {
