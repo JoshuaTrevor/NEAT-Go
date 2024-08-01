@@ -109,7 +109,6 @@ func (neuralNet *FFNeuralNet) Feed(inputs []float64) []float64 {
 func (neuralNet *FFNeuralNet) DeepCopy() *FFNeuralNet {
 	conf := config.GetConfig()
 
-	// Lazy implementation: reuse code to init random neuralnet, then just replace connection weights
 	newNeuralNet := InitNeuralNet(conf.Dimensions)
 	for layerIdx := 0; layerIdx < len(*neuralNet); layerIdx++ {
 		for nodeIdx := 0; nodeIdx < len((*neuralNet)[layerIdx]); nodeIdx++ {
@@ -156,5 +155,3 @@ func (neuralNet *FFNeuralNet) SpawnGeneration() []*FFNeuralNet {
 	}
 	return generation
 }
-
-// TODO Measure moves/sec in training simulations. Captures speed better and would also be easy to put in java also for comparison.
