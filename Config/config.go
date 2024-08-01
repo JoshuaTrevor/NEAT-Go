@@ -14,11 +14,11 @@ type Config struct {
 // If I do make this into a JSON fetch, I'm going to have to rework the fetches in FFNeuralNet to not call this method every single mutate iteration...
 func GetConfig() Config {
 	return Config{
-		Workers: 13,
-		MutateRate: 0.15,
-		MutateAmount: 0.2,
+		Workers: 15,
+		MutateRate: 0.1,
+		MutateAmount: 0.1,
 		PreservationRate: 0.12,
-		GenerationPopulation: 10000,
-		Dimensions: []int{10, 200, 4},
+		GenerationPopulation: 25000,
+		Dimensions: []int{10, 100, 4},
 	}
 }

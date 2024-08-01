@@ -1,7 +1,6 @@
 package ffneuralnet
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -46,7 +45,7 @@ func initConnections(layer *Layer, nextLayerSize int) {
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(*layer); i++ {
 		for j := 0; j < nextLayerSize; j++ {
-			randomWeightCon := Connection{Target: j, Weight: rand.Float64()}
+			randomWeightCon := Connection{Target: j, Weight: float64(0.0)}
 			(*layer)[i].Connections = append((*layer)[i].Connections, randomWeightCon)
 		}
 	}
@@ -74,6 +73,7 @@ func activation(input float64) float64 {
 
 // For every layer except the last layer, propagate inputs via weights
 func (neuralNet *FFNeuralNet) Feed(inputs []float64) []float64 {
+	//start := time.Now().UnixMicro()
 	layerCount := len(*neuralNet)
 
 	// Send through inputs
@@ -101,6 +101,7 @@ func (neuralNet *FFNeuralNet) Feed(inputs []float64) []float64 {
 	// Reset input sums to zero. Should think of a better system than this. Best way would be to use a mapping of node to inputSum, but maybe this isn't too bad
 	neuralNet.ResetInputs()
 
+	//defer fmt.Println("Feed complete in", time.Now().UnixMicro() - start, "microseconds")
 	return result
 
 }

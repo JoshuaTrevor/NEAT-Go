@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -15,6 +14,7 @@ type Coords struct {
 type Snake struct {
 	head Coords
 	body []Coords
+	Dead bool
 }
 
 const LEFT int = 0
@@ -30,6 +30,9 @@ type SnakeGame struct {
 }
 
 func (snake Snake) contains(coords Coords) bool {
+	if snake.Dead {
+		return true
+	}
 	for _, bodyCoords := range snake.body {
 		if bodyCoords.x == coords.x && bodyCoords.y == coords.y {
 			return true
@@ -40,9 +43,12 @@ func (snake Snake) contains(coords Coords) bool {
 
 // Return true if snake's head is inside its body or its head is out of bounds
 func (snake Snake) ShouldDie() bool {
+	if snake.Dead {
+		return true
+	}
 	for _, bodyCoords := range snake.body {
 		if bodyCoords.x == snake.head.x && bodyCoords.y == snake.head.y {
-			fmt.Println("Head in body", snake)
+			//fmt.Println("Head in body", snake)
 			return true
 		}
 	}
@@ -72,6 +78,13 @@ func (gameState *SnakeGame) getVision() []float64 {
 	var output [10]float64
 	output[0] = math.Min(math.Abs(float64(gameState.Snake.head.x-gameState.Food.x)), 8.0) / 8.0
 	output[1] = math.Min(math.Abs(float64(gameState.Snake.head.y-gameState.Food.y)), 8.0) / 8.0
+	// Encode direction as positive/negative
+	if gameState.Snake.head.x > gameState.Food.x {
+		output[0] *= -1
+	}
+	if gameState.Snake.head.y > gameState.Food.y {
+		output[0] *= -1
+	}
 
 	directionsAsCoordChanges := []Coords{{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, 1}, {1, -1}, {-1, 1}}
 	for idx, coordChanges := range directionsAsCoordChanges {
@@ -107,7 +120,11 @@ func (gameState *SnakeGame) SpawnFood() {
 
 func (gameState *SnakeGame) Move(direction int) {
 	oldPos := gameState.Snake.head
-	gameState.Snake.head = gameState.Snake.head.GetNeighbour(direction)
+	newHeadPos := gameState.Snake.head.GetNeighbour(direction)
+	if gameState.Snake.contains(newHeadPos) {
+		gameState.Snake.Dead = true
+	}
+	gameState.Snake.head = newHeadPos
 
 	foodCollision := gameState.Snake.head.x == gameState.Food.x && gameState.Snake.head.y == gameState.Food.y
 
