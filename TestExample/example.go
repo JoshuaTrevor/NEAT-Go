@@ -12,6 +12,8 @@ func Train() {
 
 
 
+// Trivial fitness function that should maximise the first weight and minimise the second.
+	// This is the most simplistic way to verify that the NN is capable of learning
 func evaluate(neuralNet *ffneuralnet.FFNeuralNet) float64 {
 	outputs := neuralNet.Feed([]float64{1, 1, 1, 1})
 
